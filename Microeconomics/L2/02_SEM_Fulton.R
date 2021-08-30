@@ -20,7 +20,7 @@
 # Load the data
 
   library(readr)
-  fultonfish <- read_csv("~/R/fultonfish.csv")
+  fultonfish <- read_csv("/Users/robbyjeffries/MSEA2022/Microeconomics/L2/fultonfish.csv")
 
   View(fultonfish)
 
