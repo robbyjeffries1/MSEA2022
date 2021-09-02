@@ -21,7 +21,7 @@ grades <- read_csv("/Users/robbyjeffries/MSEA2022/DataVisualization/L3/student_g
 
 grades2 <- pivot_longer(grades, math:speech, "subject")
 
-grades3 <- separate(grades2, value, c("letter", "pct"), "/", data = grades2)
+grades3 <- separate(grades2, value, into = c("letter", "pct"), "/")
 
 ### two functions
 
