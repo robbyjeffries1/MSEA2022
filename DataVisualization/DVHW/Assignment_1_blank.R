@@ -17,6 +17,8 @@
 # import libraries 
 library(tidyverse)
 library(nycflights13)
+library(ggthemes)
+
 
 
 ## Note we will exclusively use the 'flights' dataset from 'nycflights13'
@@ -32,46 +34,65 @@ flights %>%
          carrier=="DL", 
          origin=="EWR")
 
-# There are 10 Delta flights that originated at Newark on 3/10/2013
+# ANSWER: There are 10 Delta flights that originated at Newark on 3/10/2013.
 
 
-## Step 3. Generate a histogram of the departure delays for each NYC airport.
 
-# Run a summary to find the minimum and maximum departure delay times
+## Step 3. Generate a histogram of the departure delays for each NYC airport.   
 
-summary(flights$dep_delay == "NA")
+# Create a table that displays all flights in descending order of departure 
+# delays.
 
-str(flights)
+delay_desc <- flights %>% 
+  arrange(desc(dep_delay)) 
 
-ggplot(flights) + geom_histogram(aes(x = dep_delay, 
-                                     fill = origin), 
+delay_desc
+
+# Generate a histogram of the departure delays for each NYC airport
+
+ggplot(flights) + geom_histogram(aes(x = dep_delay), 
+                                 fill="red3",
                                  alpha = 0.5,
-                                 binwidth = 5)
+                                 binwidth = 5) +
+  ggtitle("Plot of Departure Delays by Airport") +
+  xlab("Departure Delay (min)") +
+  ylab("Number of Flights") +
+  facet_wrap(~ origin) +
+  theme_stata()
 
-# EWR only
-flights %>%
-  ggplot(subset(flights$origin == "EWR"), aes(x = dep_delay)) + geom_histogram()
+# Because there are only 1311 flights with departure delays above 250 minutes,
+# run the code below to generate a histogram that removes (dep_delay > 250).
+# This will improve the graph's readability.
 
-delay_JFK <- flights %>% filter(origin == "JFK")
-
-delay_LGA <- flights %>% filter(origin == "LGA")
-
-      ########[ YOUR CODE HERE]###########
+ggplot(flights) + geom_histogram(aes(x = dep_delay), 
+                                 fill="red3",
+                                 alpha = 0.5,
+                                 binwidth = 5) +
+  xlim(c(-50, 250)) +
+  ggtitle("Plot of Departure Delays by Airport") +
+  xlab("Departure Delay (min)") +
+  ylab("Number of Flights") +
+  facet_wrap(~ origin) +
+  theme_stata()
+  
 
 
 ## Step 4. For flights from JFK ONLY, generate a tibble showing the average 
 ## flight time (time in the air), grouped by the hour of the day it took off.
-## Additionally show the average number of flights occuring at that hour every day.
+## Additionally show the average number of flights occurring at that hour every day.
 
-flights
+# Find the total number of flights from JFK. Use this to check work.
+
+flights %>% filter(origin=="JFK")
 
 step4 <- flights %>% 
   filter(origin=="JFK") %>%
   group_by(hour) %>% 
   summarize(avg_flight_time=mean(air_time, na.rm=TRUE), 
-            avg_number_of_flights=n()) # fix the avg_number_of_flights! right now, it's not showing the average. it's just a count :)
+            avg_number_of_flights=aggregate() # fix the avg_number_of_flights! right now, it's not showing the average. it's just a count :)
 
 step4
+
 summary(flights)
 summary(step4)
 flights %>%
@@ -80,9 +101,27 @@ flights %>%
 sum(step4$avg_number_of_flights)
 
 
+flights[date == "2013-10-31"]
+
+
 
 ## Step 5.  Using the df from above, generate a col chart with hour of the day on the x axis, and average
 ## flight time on the y axis.
 ## (Hint, you want to use geom_col())
 
-     ########[ YOUR CODE HERE]###########
+# Create a table that displays all flights in descending order of hour.
+# Use this to validate the chart.
+
+hour_desc <- flights %>% 
+  filter(origin=="JFK") %>%
+  arrange(desc(hour)) 
+
+hour_desc
+
+# Generate a column chart with hour on the x-axis and avg_flight_time on the y
+
+ggplot(step4) + geom_col(aes(x = hour, y = avg_flight_time), fill="dodgerblue4") +
+  theme_economist() +
+  ggtitle("Plot of Average Flight Time by Hour of the Day") +
+  xlab("Hour of the Day") +
+  ylab("Average Flight Time")
