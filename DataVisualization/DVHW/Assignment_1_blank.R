@@ -113,7 +113,8 @@ test2 <- aggregate(test$n~test$hour,
                    FUN=mean)
 test2
 
-# We now have the average number of flights per hour at JFK.
+# We now have the average number of flights per hour at JFK. I will put them
+# into a tibble.
 avg_per_hour_every_day <- as_tibble(test2$`test$n`)
 avg_per_hour_every_day
 
