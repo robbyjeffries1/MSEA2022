@@ -1,0 +1,41 @@
+---
+title: "NYC Flight Homework"
+output:
+  html_document: default
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load Necessary Libraries
+
+Let's load some necessary libraries, but first, let's show a little more RMarkdown syntax, specifically, a list: 
+
+- this is how to **bold** text 
+- this is how to *italicize* text 
+- this is how to ***bold italicize*** 
+- this is a [link to some html](http://www.google.com) 
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(nycflights13)
+library(ggthemes)
+```
+
+### Step 2. Filter the data
+
+We wish to show a df of flights on March 10, specifically Delta flights that originated at EWR.
+
+``` {r}
+flights %>%
+  filter(month==3, 
+         day==10, 
+         carrier=="DL", 
+         origin=="EWR") %>%
+  count()
+```
+
