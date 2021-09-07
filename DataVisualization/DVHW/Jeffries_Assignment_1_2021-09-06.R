@@ -1,7 +1,8 @@
 #### Robby Jeffries
 #### 09-04-2021
 #### DVHW 1
-
+#### Collaboration Note: I told Katie and Shan about ggthemes and 
+#### facet_wrap(~origin) after they both had working alternatives.
 
 #### Please show all your code for each step
 
@@ -89,6 +90,11 @@ ggplot(flights) +
 ## Step 4. For flights from JFK ONLY, generate a tibble showing the average 
 ## flight time (time in the air), grouped by the hour of the day it took off.
 ## Additionally show the average number of flights occurring at that hour every day.
+
+## Note: After a discussion with classmates before class on 9/7/21, I realized
+##       that I could have accomplished the last step by running count(n())/365.
+##       Because I spent so much time figuring out this solution, I thought I
+##       would submit my original approach to hear your feedback on it. Thanks!
 
 # Merge the three date columns (year, month, day) into a single date column
 flights$date <- as.Date(with(flights, paste(year, month, day, sep="-")), "%Y-%m-%d")
