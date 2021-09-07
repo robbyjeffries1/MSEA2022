@@ -97,17 +97,17 @@ flights$date
 # Find the total number of flights from JFK. Use this to check work.
 flights %>% filter(origin=="JFK") %>% arrange(hour)
 
-# To find the average number of flights occurring at that hour every day,
+# To find the average number of flights occurring at each hour every day,
 # create a variable that lists the number of flights per hour for each day.
-test <- flights %>% 
+flights_per_hour <- flights %>% 
   filter(origin=="JFK") %>% 
   group_by(date, hour) %>% 
   count()
-test
+flights_per_hour
 
-# Next, aggregate the 'test' data to show the average number of flights for 
-# each hour across all days.
-test2 <- aggregate(test$n~test$hour, 
+# Next, aggregate the 'flights_per_hour' data to show the average number of flights for 
+# each hour across all days. I'll call this variable, 'test2'.
+test2 <- aggregate(flights_per_hour$n~flights_per_hour$hour, 
                    data=test, 
                    FUN=mean)
 test2
