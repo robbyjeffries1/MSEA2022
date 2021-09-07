@@ -43,7 +43,7 @@ ggplot(grades4) + geom_histogram(aes(x = pct,
                                  color = "red",
                                  binwidth = 5)
 
-## reference: http://ggplot2.tidyverse.org/reference
+# reference: http://ggplot2.tidyverse.org/reference
 
 # summarize the average percent grade by student
 grades4 %>% 
