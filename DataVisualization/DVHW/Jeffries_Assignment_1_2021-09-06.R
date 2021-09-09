@@ -53,6 +53,21 @@ delay_desc <- flights %>%
 
 delay_desc
 
+## In-class solution
+flights %>%
+  filter(dep_delay < 3*60) %>%
+  ggplot() + geom_histogram(aes(x = dep_delay)) +
+  facet_grid(rows = vars(origin))
+
+# Find the average delay for each airport
+flights %>% 
+  filter(dep_delay < 3*60) %>%
+  group_by(origin) %>% 
+  summarize(avg_delay = mean(dep_delay))
+  
+
+
+
 # Generate a histogram of the departure delays for each NYC airport
 ggplot(flights) + 
   geom_histogram(aes(x = dep_delay), 
@@ -95,6 +110,26 @@ ggplot(flights) +
 ##       that I could have accomplished the last step by running count(n())/365.
 ##       Because I spent so much time figuring out this solution, I thought I
 ##       would submit my original approach to hear your feedback on it. Thanks!
+
+## In-class solution
+
+# This shows how to remove NAs from the filter function. This shouldn't be used
+# because it filters out the NAs for every calculation, not just the ones it is
+# necessary for.
+flights %>%
+  filter(origin == "JFK",
+         is.na(air_time) == FALSE) %>% 
+  group_by(hour) %>% 
+  summarize(avg_flight_time2 = mean(air_time))
+
+flights %>%
+  filter(origin == "JFK") %>% 
+  group_by(hour) %>% 
+  summarize(avg_flight_time3 = mean(air_time, na.rm = TRUE),
+            avg_num_flights2 = n()/365)
+
+
+
 
 # Merge the three date columns (year, month, day) into a single date column
 flights$date <- as.Date(with(flights, paste(year, month, day, sep="-")), "%Y-%m-%d")
