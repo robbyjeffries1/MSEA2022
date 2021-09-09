@@ -114,7 +114,7 @@ flights_per_hour
 # Next, aggregate the 'flights_per_hour' data to show the average number of flights for 
 # each hour across all days. I'll call this variable, 'test2'.
 test2 <- aggregate(flights_per_hour$n~flights_per_hour$hour, 
-                   data=test, 
+                   data=flights_per_hour, 
                    FUN=mean)
 test2
 
