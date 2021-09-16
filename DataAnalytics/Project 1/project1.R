@@ -26,9 +26,34 @@ other_count <- str_count(breach$Location.of.Breached.Information, "Other") %>% s
 laptop_count <- str_count(breach$Location.of.Breached.Information, "Laptop") %>% sum()
 desktop_count <- str_count(breach$Location.of.Breached.Information, "Desktop Computer") %>% sum()
 
+# How many times is "ransom" mentioned in the prc data?
+ransom_count <- str_count(prc$Description.of.incident, "ransomware") %>% sum()
+ransom_count
+
+max(breach$Individuals.Affected)
+
+breach %>% arrange(Individuals.Affected)
+
 # place all count variables in a single tibble
 count <- tibble(email_count, network_count, paper_films_count, electronic_medical_record_count, other_count, laptop_count, desktop_count)
 count
+
+breach %>% group_by(Type.of.Breach) %>%
+  mutate(avg = mean(Individuals.Affected))
+
+ar_count <- str_count(prc$State, "Arkansas") %>% sum()
+ar_count
+
+ar_count2 <- str_count(breach$State, "AR") %>% sum()
+ar_count2
+
+
+
+
+
+
+
+
 
 # deleting punctuations
 prc$Description.of.incident <- gsub("[[:punct:][:blank:]]+", " ", prc$Description.of.incident)
