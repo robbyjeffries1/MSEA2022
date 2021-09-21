@@ -47,13 +47,9 @@ ar_count
 ar_count2 <- str_count(breach$State, "AR") %>% sum()
 ar_count2
 
-
-
-
-
-
-
-
+count %>%
+  ggplot() +
+  geom_col(mapping=aes(x=count))
 
 # deleting punctuations
 prc$Description.of.incident <- gsub("[[:punct:][:blank:]]+", " ", prc$Description.of.incident)
