@@ -3,15 +3,8 @@
 ### Written by: Robby Jeffries
 ### 09-13-2021
 
-#@ If necessary, install the following packages
-# install.packages("udpipe")
-# install.packages("textrank")
-
-# import libraries
-library(udpipe)
-library(textrank)
-library(dplyr)
-library(stringr)
+# import library
+library(tidyverse)
 
 # store csv's as variables
 prc <- read.csv(file = "/Users/robbyjeffries/MSEA2022/DataAnalytics/Project 1/PRC_Data_Breach_Chronology_2020-01-13.csv")
@@ -41,18 +34,10 @@ count
 breach %>% group_by(Type.of.Breach) %>%
   mutate(avg = mean(Individuals.Affected))
 
-ar_count <- str_count(prc$State, "Arkansas") %>% sum()
-ar_count
+# Find the number of rows from Arkansas in each data set
+ar_count_prc <- str_count(prc$State, "Arkansas") %>% sum()
+ar_count_prc
 
-ar_count2 <- str_count(breach$State, "AR") %>% sum()
-ar_count2
+ar_count_breach <- str_count(breach$State, "AR") %>% sum()
+ar_count_breach
 
-count %>%
-  ggplot() +
-  geom_col(mapping=aes(x=count))
-
-# deleting punctuations
-prc$Description.of.incident <- gsub("[[:punct:][:blank:]]+", " ", prc$Description.of.incident)
-
-# deleting trailing space
-prc$Description.of.incident <- gsub("\\n"," ", prc$Description.of.incident)
