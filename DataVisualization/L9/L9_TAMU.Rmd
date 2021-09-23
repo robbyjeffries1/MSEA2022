@@ -127,7 +127,15 @@ ggplot(houston, aes(date, f1units)) +
 houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
 
 houston %>% 
-  add_predictions(houston_mod) %>% select(f1units, pred)
+  add_predictions(houston_mod) %>% 
+  ggplot(aes(date, pred)) +
+  geom_line()
+
+houston %>% 
+  add_residuals(houston_mod) %>% 
+  ggplot(aes(date, resid)) +
+  geom_hline(yintercept = 0, size = 3, color = "white") +
+  geom_line()
  
 ```
 

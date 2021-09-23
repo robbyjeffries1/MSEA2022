@@ -1,0 +1,60 @@
+---
+title: "What is a model?"
+author: "Robby Jeffries"
+date: "9/23/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### What is a model?
+
+```{r}
+sim1 <- modelr::sim1
+
+range(sim1)
+
+ggplot(sim1, aes(x, y)) +
+  geom_point()
+
+```
+
+Looks linear, or $$ Y = B_0 + B_1\phi_1(x) $$
+
+Let's now create *many* naive models
+
+```{r}
+
+models <- tibble(
+  a1 = runif(1000, -20, 40),
+  a2 = runif(1000, -5, 5)
+)
+
+# view the data
+models
+
+ggplot(sim1, aes(x, y)) +
+  geom_abline(aes(intercept = a1, slope = a2), 
+              data = models, alpha = 1/4) +
+  geom_point()
+
+```
+
+Many of these models are terrible. How shall we pick the best one?
+
+One idea: let's minimze the distance between the model (the *"prediction"*) and the observed data (the *"response"*).
+
+```{r}
+
+model1 <- function(a, data) {
+  a[1] + data$x * a[2]
+}
+model1(c(7, 1.5), sim1)
+
+```
+
+It was at this moment that I couldn't keep up. :)
