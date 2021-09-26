@@ -1,0 +1,165 @@
+---
+title: "Assignment 2, Titanic Analysis"
+author: "Robby Jeffries"
+date: "9/25/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+
+# Replace line 16 with the file path to the image "titanic.png"
+```
+
+![RMS Titanic](/Users/robbyjeffries/MSEA2022/DataVisualization/DVHW/titanic.png)
+
+### What actually happened on that fateful day?
+
+We all know the story of the Titanic. On April 15th, 1912, the "unsinkable" happened. The RMS Titanic sank. Although detailed information exists for many of the passengers, many people have never explored the data surrounding this voyage. Let's take a closer look at this data and uncover the details of this historic event.
+
+I referenced [this page](https://medium.com/analytics-vidhya/a-beginners-guide-to-learning-r-with-the-titanic-dataset-a630bc5495a8) as I considered my analysis.
+
+```{r}
+# STEP 1: IMPORT AND CLEAN THE DATA
+
+# If necessary, install the following packages on your machine.
+# install.packages("titanic")
+# install.packages("tidyverse")
+# install.packages("ggcorrplot")
+
+# import libraries
+library(titanic)
+library(tidyverse)
+library(ggcorrplot)
+
+# import raw data
+raw_data <- bind_rows(as_tibble(titanic::titanic_train), as_tibble(titanic::titanic_test))
+
+# save the raw data to a data frame variable
+df <- raw_data
+
+df = select(df, Survived, Pclass, Age, Sex, SibSp, Parch, Fare)
+
+# omit NA values
+df = na.omit(df)
+
+# str(df)
+
+# Convert 'Survived' and 'Pclass' to categorical variables (factors)
+df$Survived = factor(df$Survived)
+df$Pclass = factor(df$Pclass, order=TRUE, levels = c(3, 2, 1))
+
+raw_count <- count(raw_data)
+cleaned_count <- count(df)
+
+```
+***
+### Question 1: Who lived and who died, demographically?
+
+Let's first take a look at how many people lived and how many people died. The data set we are analyzing contains information for `r raw_count` passengers. Of those `r raw_count`, the data set contains survival information for `r cleaned_count` passengers.
+
+```{r}
+ggplot(df, aes(x = Survived)) +
+  geom_bar(width=0.5, fill = "coral") +
+  geom_text(stat='count', aes(label=stat(count)), vjust=-0.5) +
+  ggtitle("Survival in General") +
+  theme_minimal()
+
+number_died <- sum(df$Survived == 0)
+number_survived <- sum(df$Survived == 1)
+
+# table(df$Survived)
+
+```
+
+***
+### Question 2: Was gender a factor?
+
+We can see that **`r number_died`** people died and **`r number_survived`** people survived. Let's double-click on this stat and see how many people died by sex.
+
+```{r}
+ggplot(raw_data, aes(x = Survived, fill=Sex)) +
+ geom_bar(position = position_dodge()) +
+ geom_text(stat='count',
+           aes(label=stat(count)),
+           position = position_dodge(width=1), 
+           vjust=-0.5) +
+  ggtitle("Survival by Sex") +
+  theme_minimal()
+```
+
+As the chart above shows, the vast majority of passengers who died were male, and approximately two-thirds of survivors were female. 
+
+***
+### Question 3: Was class of service a factor?
+
+The passengers were in three different classes: 1st, 2nd, and 3rd. How many people died in each class?
+
+```{r}
+ggplot(df, aes(x = Survived, fill=Pclass)) +
+ geom_bar(position = position_dodge()) +
+ geom_text(stat='count', 
+           aes(label=stat(count)), 
+           position = position_dodge(width=1), 
+           vjust=-0.5) + 
+  ggtitle("Survival by Passenger Class") +
+  theme_minimal()
+```
+
+As one might expect, the majority of passengers who died were in the lowest (3rd) class, and the majority of survivors were first-class passengers.
+
+
+
+***
+### Question 4: What other patterns do you see in the data?
+
+#### What did the survival rate look like by age?
+
+```{r}
+# Discretize age to plot survival
+df$Discretized.age = cut(df$Age, c(0,10,20,30,40,50,60,70,80,100))
+
+# Plot discretized age
+ggplot(df, aes(x = Discretized.age, fill=Survived)) +
+  geom_bar(position = position_dodge()) +
+  geom_text(stat='count', 
+            aes(label=stat(count)), 
+            position = position_dodge(width=1), 
+            vjust=-0.5) +
+  ggtitle("Survival by Age") +
+  xlab("Discretized Age") +
+  theme_minimal()
+
+# discard the temporary variable after using it.
+df$Discretized.age = NULL
+```
+
+#### What did the survival rate look like by fare price?
+
+Although some passengers received a free ticket, most passengers spent money on their fare. Did the amount of money that someone spent on their ticket impact their survival?
+
+```{r}
+# Discretize fare to plot survival
+df$Discretized.fare = cut(df$Fare, c(-1,50,100,150,200,250,300,350,400,450,500,550,600,650))
+
+# Plot discretized fare
+ggplot(df, aes(x = Discretized.fare, fill=Survived)) +
+  geom_bar(position = position_dodge()) +
+  geom_text(stat='count', 
+            aes(label=stat(count)), 
+            position = position_dodge(width=1), 
+            vjust=-0.5) +
+  ggtitle("Survival by Fare") +
+  xlab("Discretized Fare ($)") +
+  theme_minimal()
+
+# discard the temporary variable after using it.
+df$Discretized.fare = NULL
+```
+
+Interestingly, approximately two-thirds of the passengers who spent the least amount of money died in the chaos. As the fare price increased, we see that the majority of passengers survived. Further, all three passengers that spent between $500-$550 survived.
+
+
+

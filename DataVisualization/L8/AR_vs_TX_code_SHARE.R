@@ -21,8 +21,8 @@ scrape_qbrs %>%
     select(name_short, opp_team_name, score, pass, run, game_id) %>%
     pluck("game_id") -> ar_game_id
 
-## Include game_id for live game on 9/18/2021
-ar_game_id <- 401282069
+## Include game_id for live game on 9/25/2021
+ar_game_id <- 401282082
 
 raw_probs <- my_get_espn_win_prob(game_id = ar_game_id)
 
@@ -67,13 +67,13 @@ merged_data %>%
                             fill = helped_hogs),
                         alpha = .80) +
     coord_flip() +
-    scale_fill_manual(values = c("#011E41",   #Arkansas and Tex colors
+    scale_fill_manual(values = c("#500000",   #Arkansas and Tex colors
                                  "#9D2235"), 
                       guide = FALSE) +        #note guide argument 
     theme_minimal() +
     ylab("Change in probability") +
     xlab("Play number") +
-    ggtitle("Arkansas vs. Georgia Southern")
+    ggtitle("Arkansas vs. Texas A&M")
     
 
 
@@ -83,7 +83,7 @@ merged_data %>%
                               y = home_win_percentage,
                               color = helped_hogs), 
                           alpha = .7) +
-    scale_color_manual(values = c("#011E41",   #Arkansas and Tex colors
+    scale_color_manual(values = c("#500000",   #Arkansas and Tex colors
                                  "#9D2235"), 
                        guide = FALSE) 
 
