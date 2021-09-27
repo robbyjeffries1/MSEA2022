@@ -10,14 +10,15 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
 
-# Replace line 16 with the file path to the image "titanic.png"
+# If you would like a nice image of the Titanic in the report, place line 14 below this code chunk with the file path to the image "titanic.png"
+# ![RMS Titanic](/Users/robbyjeffries/MSEA2022/DataVisualization/DVHW/titanic.png)
+
 ```
 
-![RMS Titanic](/Users/robbyjeffries/MSEA2022/DataVisualization/DVHW/titanic.png)
 
 ### What actually happened on that fateful day?
 
-We all know the story of the Titanic. On April 15th, 1912, the "unsinkable" happened. The RMS Titanic sank. Although detailed information exists for many of the passengers, many people have never explored the data surrounding this voyage. Let's take a closer look at this data and uncover the details of this historic event.
+On April 15th, 1912, the "unsinkable" happened. The RMS Titanic sank. Although detailed information exists for many of the passengers, many people have never explored the data surrounding this voyage. Let's take a closer look at this data and uncover the details of this historic event.
 
 I referenced [this page](https://medium.com/analytics-vidhya/a-beginners-guide-to-learning-r-with-the-titanic-dataset-a630bc5495a8) as I considered my analysis.
 
@@ -38,21 +39,47 @@ library(ggcorrplot)
 raw_data <- bind_rows(as_tibble(titanic::titanic_train), as_tibble(titanic::titanic_test))
 
 # save the raw data to a data frame variable
-df <- raw_data
+clean_raw_data <- raw_data
 
-df = select(df, Survived, Pclass, Age, Sex, SibSp, Parch, Fare)
+# convert 'Pclass' to a categorical variable
+clean_raw_data$Pclass = factor(clean_raw_data$Pclass, order=TRUE, levels = c(3, 2, 1))
 
-# omit NA values
-df = na.omit(df)
+# convert 'Survived' to a categorical variable, and change from "0" and "1" to a more readable "No" and "Yes"
+# convert 'Sex' to a categorical variable, and capitalize "male" and "female"
+clean_raw_data <- clean_raw_data %>% 
+  mutate(Survived = factor(Survived)) %>%
+  mutate(Survived = forcats::fct_recode(Survived, "No" = "0", "Yes" = "1")) %>%
+  mutate(Sex = factor(Sex)) %>%
+  mutate(Sex = forcats::fct_recode(Sex, "Male" = "male", "Female" = "female"))
 
-# str(df)
 
-# Convert 'Survived' and 'Pclass' to categorical variables (factors)
-df$Survived = factor(df$Survived)
-df$Pclass = factor(df$Pclass, order=TRUE, levels = c(3, 2, 1))
+######################################################
+# Different variables contain different amounts  
+# of na values. To account for this, I created a 
+# new data frame for each different plot. 
+#
+# This isn't very efficient, and it's repetitive.
+#
+# After completing the assignment, I realized that
+# I could have run the following command to see 
+# how many na's there were in each variable:
+#
+# clean_raw_data %>% purrr::map_dbl(~sum(is.na(.)))
+# 
+# If I were to start from scratch, I would have only 
+# created new data frames where necessary to maximize
+# the script's computational efficiency. :)
+######################################################
 
+
+# create a data frame to plot the survival rate in general. Omit na values.
+df1 <- clean_raw_data
+df1 = select(df1, Survived)
+df1 = na.omit(df1)
+
+# total how many rows are in the raw data and how many rows are in the cleaned data
 raw_count <- count(raw_data)
-cleaned_count <- count(df)
+cleaned_count <- count(df1)
 
 ```
 ***
@@ -61,36 +88,43 @@ cleaned_count <- count(df)
 Let's first take a look at how many people lived and how many people died. The data set we are analyzing contains information for `r raw_count` passengers. Of those `r raw_count`, the data set contains survival information for `r cleaned_count` passengers.
 
 ```{r}
-ggplot(df, aes(x = Survived)) +
-  geom_bar(width=0.5, fill = "coral") +
+
+ggplot(df1, aes(x = Survived)) +
+  geom_bar(width=0.5, fill = "steelblue") +
   geom_text(stat='count', aes(label=stat(count)), vjust=-0.5) +
   ggtitle("Survival in General") +
   theme_minimal()
 
-number_died <- sum(df$Survived == 0)
-number_survived <- sum(df$Survived == 1)
-
-# table(df$Survived)
-
+number_died <- sum(df1$Survived == "No")
+number_survived <- sum(df1$Survived == "Yes")
 ```
 
 ***
 ### Question 2: Was gender a factor?
 
-We can see that **`r number_died`** people died and **`r number_survived`** people survived. Let's double-click on this stat and see how many people died by sex.
+From the previous graph, we can see that **`r number_died`** people died and **`r number_survived`** people survived. Let's double-click on this stat and analyze the survival rate by sex.
 
 ```{r}
-ggplot(raw_data, aes(x = Survived, fill=Sex)) +
- geom_bar(position = position_dodge()) +
- geom_text(stat='count',
-           aes(label=stat(count)),
-           position = position_dodge(width=1), 
-           vjust=-0.5) +
-  ggtitle("Survival by Sex") +
+
+# create a new data frame to analyze survival rate by sex.
+# this will ensure that rows of data are not dropped because 
+# an na exists elsewhere in the row
+
+df_sex <- clean_raw_data
+  # select the columns that we are interested in analyzing
+  df_sex = select(df_sex, Survived, Sex)
+  # omit NA values
+  df_sex = na.omit(df_sex)
+
+ggplot(df_sex, aes(Sex, fill=Survived)) +
+  geom_bar(position = "fill") + 
+  ylab("Survival Rate") + 
+  geom_hline(yintercept = (sum(df_sex$Survived=="Yes")/nrow(df_sex)), col = "white", lty = 2) + 
+  ggtitle("Survival Rate by Sex") +
   theme_minimal()
 ```
 
-As the chart above shows, the vast majority of passengers who died were male, and approximately two-thirds of survivors were female. 
+As the above chart shows, the majority of women survived, and the majority of men died. The white horizontal line represents the average survival rate without regard to sex. This shows us that the men's survival rate was below-average, and the women's survival rate was above-average. This is consistent with our expectation because women and children were given priority on the lifeboats.
 
 ***
 ### Question 3: Was class of service a factor?
@@ -98,13 +132,24 @@ As the chart above shows, the vast majority of passengers who died were male, an
 The passengers were in three different classes: 1st, 2nd, and 3rd. How many people died in each class?
 
 ```{r}
-ggplot(df, aes(x = Survived, fill=Pclass)) +
+# create a new data frame to analyze survival rate by class
+df_class <- clean_raw_data
+  # select the columns that we are interested in analyzing
+  df_class = select(df_class, Survived, Pclass)
+  # omit NA values
+  df_class = na.omit(df_class)
+  
+df_class <- df_class %>% 
+  mutate(Pclass = forcats::fct_recode(Pclass, "3rd Class" = "3", "2nd Class" = "2", "1st Class" = "1")) 
+
+ggplot(df_class, aes(x = Survived, fill=Pclass)) +
  geom_bar(position = position_dodge()) +
  geom_text(stat='count', 
            aes(label=stat(count)), 
            position = position_dodge(width=1), 
            vjust=-0.5) + 
   ggtitle("Survival by Passenger Class") +
+  ylab("Count") +
   theme_minimal()
 ```
 
@@ -118,11 +163,18 @@ As one might expect, the majority of passengers who died were in the lowest (3rd
 #### What did the survival rate look like by age?
 
 ```{r}
+# create a new data frame to analyze survival rate by age
+df_age <- clean_raw_data
+  # select the columns that we are interested in analyzing
+  df_age = select(df_age, Survived, Age)
+  # omit NA values
+  df_age = na.omit(df_age)
+
 # Discretize age to plot survival
-df$Discretized.age = cut(df$Age, c(0,10,20,30,40,50,60,70,80,100))
+df_age$Discretized.age = cut(df_age$Age, c(0,10,20,30,40,50,60,70,80,100))
 
 # Plot discretized age
-ggplot(df, aes(x = Discretized.age, fill=Survived)) +
+ggplot(df_age, aes(x = Discretized.age, fill=Survived)) +
   geom_bar(position = position_dodge()) +
   geom_text(stat='count', 
             aes(label=stat(count)), 
@@ -130,22 +182,44 @@ ggplot(df, aes(x = Discretized.age, fill=Survived)) +
             vjust=-0.5) +
   ggtitle("Survival by Age") +
   xlab("Discretized Age") +
+  ylab("Count") +
   theme_minimal()
 
 # discard the temporary variable after using it.
-df$Discretized.age = NULL
+df_age$Discretized.age = NULL
+
+ggplot(df_age, aes(x = Age, fill = Survived)) +
+  geom_density(alpha = 0.4) +
+  ggtitle("Density Plot of Age related to Survival")
+
 ```
+
+The density plot above shows whether survival or death was more common at a given age. That is, where the blue ("Yes") color has the greater density, survival was more common. The survival rate was best among young children. Where the red ("No") color has the greater density, death was more common. Passengers in their 20s were the most at-risk, and we can also see that the elderly also had a greater risk of dying.
+
+***
+### Question 5: What is something surprising in the data that others may have missed?
 
 #### What did the survival rate look like by fare price?
 
-Although some passengers received a free ticket, most passengers spent money on their fare. Did the amount of money that someone spent on their ticket impact their survival?
+When people think about the victims of the Titanic's sinking, they may intuitively associate age or status with survival. Let's add a level of granularity. Since this data set contains the price of each passenger's fare, let's check whether or not the amount of money that someone spent on their ticket impacted their survival.
+
+Perhaps those that spent more money on their ticket were more cognizant of how to navigate the ship and claim a spot on a lifeboat? Let's take a look.
+
+*Note: Although some passengers received a free ticket, most passengers spent money on their fare.*
 
 ```{r}
+# create a new data frame to analyze survival rate by fare
+df_fare <- clean_raw_data
+  # select the columns that we are interested in analyzing
+  df_fare = select(df_fare, Survived, Fare)
+  # omit NA values
+  df_fare = na.omit(df_fare)
+
 # Discretize fare to plot survival
-df$Discretized.fare = cut(df$Fare, c(-1,50,100,150,200,250,300,350,400,450,500,550,600,650))
+df_fare$Discretized.fare = cut(df_fare$Fare, c(-1,50,100,150,200,250,300,350,400,450,500,550,600,650))
 
 # Plot discretized fare
-ggplot(df, aes(x = Discretized.fare, fill=Survived)) +
+ggplot(df_fare, aes(x = Discretized.fare, fill=Survived)) +
   geom_bar(position = position_dodge()) +
   geom_text(stat='count', 
             aes(label=stat(count)), 
@@ -153,13 +227,23 @@ ggplot(df, aes(x = Discretized.fare, fill=Survived)) +
             vjust=-0.5) +
   ggtitle("Survival by Fare") +
   xlab("Discretized Fare ($)") +
+  ylab("Count") +
   theme_minimal()
 
 # discard the temporary variable after using it.
-df$Discretized.fare = NULL
+df_fare$Discretized.fare = NULL
+
 ```
 
-Interestingly, approximately two-thirds of the passengers who spent the least amount of money died in the chaos. As the fare price increased, we see that the majority of passengers survived. Further, all three passengers that spent between $500-$550 survived.
+Interestingly, approximately two-thirds of the passengers who spent the least amount of money died in the chaos. As the fare price increased, we see that the majority of passengers survived. Further, all three passengers that spent between $500-$550 survived. The plot above contains a strong right-skew. To account for this, let's create a density plot on a log scale.
 
+```{r}
+ggplot(df_fare, aes(x = log(Fare), fill = Survived)) +
+  geom_density(alpha = 0.4) + 
+  xlab("log(Fare)") +
+  ylab("Density") + 
+  ggtitle("Density Plot of Fare related to Survival")
 
+```
 
+Sure enough, the log scale shows us that the passengers with cheaper tickets had a significantly greater risk of dying. Further analysis would be required before causal inferences could be made, but a correlation between survival and fare certainly exists.
