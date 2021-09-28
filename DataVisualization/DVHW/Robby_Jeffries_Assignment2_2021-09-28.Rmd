@@ -25,15 +25,24 @@ I referenced [this page](https://medium.com/analytics-vidhya/a-beginners-guide-t
 ```{r}
 # STEP 1: IMPORT AND CLEAN THE DATA
 
-# If necessary, install the following packages on your machine.
+## If necessary, install the following packages on your machine:
 # install.packages("titanic")
 # install.packages("tidyverse")
 # install.packages("ggcorrplot")
+# install.packages("dummies")
+# install.packages("caret")
+# install.packages("e1071")
+# install.packages("ROCR")
+
 
 # import libraries
 library(titanic)
 library(tidyverse)
 library(ggcorrplot)
+library(dummies)
+library(caret)
+library(e1071)
+library(ROCR)
 
 # import raw data
 raw_data <- bind_rows(as_tibble(titanic::titanic_train), as_tibble(titanic::titanic_test))
@@ -247,3 +256,62 @@ ggplot(df_fare, aes(x = log(Fare), fill = Survived)) +
 ```
 
 Sure enough, the log scale shows us that the passengers with cheaper tickets had a significantly greater risk of dying. Further analysis would be required before causal inferences could be made, but a correlation between survival and fare certainly exists.
+
+
+***
+### Regression
+
+*Caveat: I did not know how to approach regression analysis off-hand; so I went to Google. I discovered [this page](https://rpubs.com/abhaypadda/logistic-regression-using-titanic-data), written by Abhay Padda. For practice, I have replicated his code here.*
+
+```{r}
+
+# load the datasets
+data("titanic_train")
+data("titanic_test")
+
+# setting survived column for test data to NA
+titanic_test$Survived <- NA
+
+# combining training and testing datasets
+complete_data <- rbind(titanic_train, titanic_test)
+
+# missing values imputation
+complete_data$Embarked[complete_data$Embarked==""] <- "S"
+
+complete_data$Age[is.na(complete_data$Age)] <- median(complete_data$Age, na.rm=T)
+
+# Removing cabin as it has very high missing values, passengerID, Ticket, and Name are not required
+titanic_data <- complete_data %>% dplyr::select(-c(Cabin, PassengerId, Ticket, Name))
+
+# converting "Survived", "Pclass", "Sex", "Embarked" to factors
+for (i in c("Survived", "Pclass", "Sex", "Embarked")){ 
+  titanic_data[,i] = as.factor(titanic_data[,i])
+  }
+
+# create dummy variables for categorical variables
+titanic_data <- dummies::dummy.data.frame(titanic_data, names = c("Pclass", "Sex", "Embarked"), sep = "_")
+
+# Splitting training and test data
+train <- titanic_data[1:667,]
+test <- titanic_data[668:889,]
+
+# Model creation
+model <- stats::glm(Survived ~., family = binomial(link = 'logit'), data = train)
+
+# Model Summary
+# summary(model)
+
+# Using anova() to analyze the table of deviance
+# anova(model, test = "Chisq")
+
+# Predicting test data
+result <- predict(model, newdata = test, type = 'response')
+result <- ifelse(result > 0.5, 1, 0)
+
+# Confusion matrix and statistics 
+caret::confusionMatrix(data = as.factor(result), reference = as.factor(test$Survived))
+
+
+
+```
+
