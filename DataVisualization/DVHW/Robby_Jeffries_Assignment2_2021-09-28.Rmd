@@ -130,6 +130,7 @@ ggplot(df_sex, aes(Sex, fill=Survived)) +
   ylab("Survival Rate") + 
   geom_hline(yintercept = (sum(df_sex$Survived=="Yes")/nrow(df_sex)), col = "white", lty = 2) + 
   ggtitle("Survival Rate by Sex") +
+  scale_fill_manual(values = c("grey18", "springgreen3")) +
   theme_minimal()
 ```
 
@@ -159,6 +160,7 @@ ggplot(df_class, aes(x = Survived, fill=Pclass)) +
            vjust=-0.5) + 
   ggtitle("Survival by Passenger Class") +
   ylab("Count") +
+  scale_fill_manual(values = c("#7F735F", "azure3", "#E9AF4E")) +
   theme_minimal()
 ```
 
@@ -192,6 +194,7 @@ ggplot(df_age, aes(x = Discretized.age, fill=Survived)) +
   ggtitle("Survival by Age") +
   xlab("Discretized Age") +
   ylab("Count") +
+  scale_fill_manual(values = c("grey18", "springgreen3")) +
   theme_minimal()
 
 # discard the temporary variable after using it.
@@ -199,7 +202,9 @@ df_age$Discretized.age = NULL
 
 ggplot(df_age, aes(x = Age, fill = Survived)) +
   geom_density(alpha = 0.4) +
-  ggtitle("Density Plot of Age related to Survival")
+  ggtitle("Density Plot of Age related to Survival") +
+  scale_fill_manual(values = c("grey18", "springgreen3"))
+
 
 ```
 
@@ -237,6 +242,7 @@ ggplot(df_fare, aes(x = Discretized.fare, fill=Survived)) +
   ggtitle("Survival by Fare") +
   xlab("Discretized Fare ($)") +
   ylab("Count") +
+  scale_fill_manual(values = c("grey18", "springgreen3")) +
   theme_minimal()
 
 # discard the temporary variable after using it.
@@ -251,7 +257,8 @@ ggplot(df_fare, aes(x = log(Fare), fill = Survived)) +
   geom_density(alpha = 0.4) + 
   xlab("log(Fare)") +
   ylab("Density") + 
-  ggtitle("Density Plot of Fare related to Survival")
+  ggtitle("Density Plot of Fare related to Survival") +
+  scale_fill_manual(values = c("grey18", "springgreen3")) 
 
 ```
 
@@ -259,9 +266,15 @@ Sure enough, the log scale shows us that the passengers with cheaper tickets had
 
 
 ***
-### Regression
+### Logistic Regression to predict survival
 
-*Caveat: I did not know how to approach regression analysis off-hand; so I went to Google. I discovered [this page](https://rpubs.com/abhaypadda/logistic-regression-using-titanic-data), written by Abhay Padda. For practice, I have replicated his code here.*
+*Caveat: I did not know how to approach regression analysis off-hand; so I went to Google. I discovered [this page](https://rpubs.com/abhaypadda/logistic-regression-using-titanic-data), written by Abhay Padda. For practice, I replicated his code here. While much of Padda's code worked as written, several sections requried modifications to work with our data set.*
+
+Logistic regressions are useful when the dependent variable is binary. In this case, our dependent variable is survival (0 = died, 1 = survived). When logistic functions are plotted, they resemble an elongated letter 's'. For a given value along the x-axis, the plot will tell you the probability that the passenger survived.
+
+A question arises: at what threshold should a probability be classified as a survival or a death? 50%? 65%? That is where the [**Receiver Operating Characteristic (ROC) curve**](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) comes into play. The ROC curve is built by (1) running a logistic regression and (2) computing a [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix) for each individual passenger, which defines a new threshold of survival for each passenger.
+
+The end goal is to strike an optimal balance between the true positive rate and the false positive rate. The following graph show the ROC curve for the Titanic data set, and the optimal configuration is near the top left corner. As we might have intuitively guessed for a simple data set such as this, a good probability threshold for predicting survival is approximately 50%. 
 
 ```{r}
 
@@ -301,17 +314,33 @@ model <- stats::glm(Survived ~., family = binomial(link = 'logit'), data = train
 # Model Summary
 # summary(model)
 
-# Using anova() to analyze the table of deviance
+## Using anova() to analyze the table of deviance
 # anova(model, test = "Chisq")
 
 # Predicting test data
 result <- predict(model, newdata = test, type = 'response')
 result <- ifelse(result > 0.5, 1, 0)
 
-# Confusion matrix and statistics 
-caret::confusionMatrix(data = as.factor(result), reference = as.factor(test$Survived))
+## Confusion matrix and statistics, which 
+#caret::confusionMatrix(data = as.factor(result), reference = as.factor(test$Survived))
 
+# Receiver Operating Characteristic (ROC) Curve and calculating the area under the curve (AUC)
+predictions <- predict(model, newdata = test, type = "response")
 
+ROCRpred <- ROCR::prediction(predictions, test$Survived)
+
+ROCRperf <- ROCR::performance(ROCRpred, measure = "tpr", x.measure = "fpr")
+
+plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7), print.cutoffs.at = seq(0, 1, .1), main="Receiver Operating Characteristic Curve")
+
+auc <- performance(ROCRpred, measure = "auc")
+
+auc <- round(auc@y.values[[1]], digits = 2)
+
+auc_perc <- auc * 100
 
 ```
 
+The area under the curve (AUC) is `r auc`. This value is meaningful if you want to compare multiple ROC curves and determine which one is the best model. The greater the AUC, the better the model. An area of 1.00 or 100% is a perfect test. Therefore, I conclude that the AUC of the above graph is 'pretty good' with an area of `r auc_perc`.
+
+For additional information regarding ROC and AUC, I watched this [StatQuest with Josh Starmer](https://www.youtube.com/watch?v=4jRBRDbJemM).
