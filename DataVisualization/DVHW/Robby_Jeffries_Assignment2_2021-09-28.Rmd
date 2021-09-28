@@ -10,9 +10,6 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
 
-# If you would like a nice image of the Titanic in the report, place line 14 below this code chunk with the file path to the image "titanic.png"
-# ![RMS Titanic](/Users/robbyjeffries/MSEA2022/DataVisualization/DVHW/titanic.png)
-
 ```
 
 
@@ -208,7 +205,7 @@ ggplot(df_age, aes(x = Age, fill = Survived)) +
 
 ```
 
-The density plot above shows whether survival or death was more common at a given age. That is, where the blue ("Yes") color has the greater density, survival was more common. The survival rate was best among young children. Where the red ("No") color has the greater density, death was more common. Passengers in their 20s were the most at-risk, and we can also see that the elderly also had a greater risk of dying.
+The density plot above shows whether survival or death was more common at a given age. That is, where the green ("Yes") color has the greater density, survival was more common. The survival rate was best among young children. Where the grey ("No") color has the greater density, death was more common. Passengers in their 20s were the most at-risk, and we can also see that the elderly also had a greater risk of dying.
 
 ***
 ### Question 5: What is something surprising in the data that others may have missed?
@@ -274,7 +271,9 @@ Logistic regressions are useful when the dependent variable is binary. In this c
 
 A question arises: at what threshold should a probability be classified as a survival or a death? 50%? 65%? That is where the [**Receiver Operating Characteristic (ROC) curve**](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) comes into play. The ROC curve is built by (1) running a logistic regression and (2) computing a [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix) for each individual passenger, which defines a new threshold of survival for each passenger.
 
-The end goal is to strike an optimal balance between the true positive rate and the false positive rate. The following graph show the ROC curve for the Titanic data set, and the optimal configuration is near the top left corner. As we might have intuitively guessed for a simple data set such as this, a good probability threshold for predicting survival is approximately 50%. 
+The end goal is to strike an optimal balance between the true positive rate and the false positive rate. The following graph shows the ROC curve for the Titanic data set, and the optimal configuration is near the top left corner. As we might have intuitively guessed for a simple data set such as this, a good probability threshold for predicting survival is approximately 50%. 
+
+*(Note: this is not predicting that 50% of passengers survived. It simply says that for a logistic regression of survival, passengers with a probability of survival >=50% likely survived and passengers with a probability of survival <=50% likely died.)*
 
 ```{r}
 
@@ -341,6 +340,6 @@ auc_perc <- auc * 100
 
 ```
 
-The area under the curve (AUC) is `r auc`. This value is meaningful if you want to compare multiple ROC curves and determine which one is the best model. The greater the AUC, the better the model. An area of 1.00 or 100% is a perfect test. Therefore, I conclude that the AUC of the above graph is 'pretty good' with an area of `r auc_perc`.
+The area under the curve (AUC) is `r auc`. This value is meaningful if you want to compare multiple ROC curves and determine which one is the best model. The greater the AUC, the better the model. An area of 1.00 or 100% is a perfect model. Therefore, I conclude that the AUC of the above graph is 'pretty good' with an area of `r auc_perc`%.
 
 For additional information regarding ROC and AUC, I watched this [StatQuest with Josh Starmer](https://www.youtube.com/watch?v=4jRBRDbJemM).
