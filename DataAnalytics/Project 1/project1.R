@@ -23,21 +23,13 @@ desktop_count <- str_count(breach$Location.of.Breached.Information, "Desktop Com
 ransom_count <- str_count(prc$Description.of.incident, "ransomware") %>% sum()
 ransom_count
 
-max(breach$Individuals.Affected)
-
-breach %>% arrange(Individuals.Affected)
-
 # place all count variables in a single tibble
 count <- tibble(email_count, network_count, paper_films_count, electronic_medical_record_count, other_count, laptop_count, desktop_count)
 count
 
-breach %>% group_by(Type.of.Breach) %>%
-  mutate(avg = mean(Individuals.Affected))
-
 # Find the number of rows from Arkansas in each data set
 ar_count_prc <- str_count(prc$State, "Arkansas") %>% sum()
 ar_count_prc
-
 ar_count_breach <- str_count(breach$State, "AR") %>% sum()
 ar_count_breach
 
