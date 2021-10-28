@@ -20,4 +20,6 @@ View(home_panel_summary)
 
 normal <- read_csv("/Users/robbyjeffries/MSEA2022/Microeconometrics/Final_Project/Chick-fil-A-PATTERNS-2018_01-2021-10-21/normalization_stats.csv")
 View(normal)
+
+# test comment
  
