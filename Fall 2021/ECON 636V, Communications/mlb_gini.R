@@ -43,6 +43,8 @@ plot(0,
 # Add a diagonal line to represent perfect equality
 lines(x = c(0,1), y = c(0,1))
 
+team_name <- list()
+
 # Use a for loop to generate gini coeff's and Lc's for each team
 for (i in unique(mlb_data_cleaned$team)) {
   
@@ -50,7 +52,7 @@ for (i in unique(mlb_data_cleaned$team)) {
   assign(i, mlb_data_cleaned %>% filter(team == i))
   
   # Generate a gini coefficient for each team and save them to unique variables 
-  assign(paste("gini", i, sep = "_"), ineq(eval(parse(text = paste(i, "$salary", sep = ""))), type = "Gini"))
+  team_name [i] <- assign(paste("gini", i, sep = "_"), ineq(eval(parse(text = paste(i, "$salary", sep = ""))), type = "Gini"))
   
   # Plot Lorenz Curves
   assign(paste("Lc", i, sep = "."), Lc(eval(parse(text = paste(i, "$salary", sep = "")))))
