@@ -84,10 +84,11 @@ twoway bar count bin, xline(50)
 
 * Testing for gaming of the cutoff
 rddensity perc, c(0.5) plot ///
-cirl_opt(color(blue%30)) cill_opt(color(blue%30)) ///
-esll_opt(color(blue)) histl_opt(color(blue%30) barwidth(.009)) ///
-cirr_opt(color(red%30)) cilr_opt(color(red%30)) ///
-eslr_opt(color(red)) histr_opt(color(red%30) barwidth(.007))
+cirl_opt(color(blue%0)) cirr_opt(color(red%0)) /// left and right confidence interval
+esll_opt(color(blue%0)) eslr_opt(color(red%0)) /// left and right line
+histl_opt(color(blue%30) barwidth(.009)) /// left histogram
+histr_opt(color(red%30) barwidth(.007)) // right histogram
+
 
 
 * Testing for statistical power (benchmark of 0.8)
@@ -117,6 +118,15 @@ bysort bins: egen avg_deaths2 = mean(death_rate) // Average death rate by bin
 bysort bins: egen avg_cases = mean(case_rate) // Average death rate by bin
 bysort bins: egen avg_vax = mean(series_complete_18pluspop_pct) // Average death rate by bin
 
+* Label Variables
+la var death_rate "Death Rate"
+la var case_rate "Case Rate"
+la var series_complete_18pluspop_pct "Vax Rate 18+"
+la var perc_std "% Republican Linear"
+la var treat_perc "Treatment x % Rep."
+la var perc_std2 "% Rep. Quadratic"
+la var treat_perc2 "Treat x % Rep. Sqrd."
+
 * Regressions on death rate
 eststo reg_d1: qui areg death_rate treat perc_std, robust absorb(state) // linear regression without interaction term
 eststo reg_d2: qui areg death_rate treat perc_std treat_perc, robust absorb(state) // linear regression with interaction term
@@ -133,9 +143,9 @@ eststo reg_v2: qui areg series_complete_18pluspop_pct treat perc_std treat_perc,
 eststo reg_v3: qui areg series_complete_18pluspop_pct treat perc_std perc_std2 treat_perc treat_perc2, robust absorb(state) // quadratic regression
 
 * Generate table with both linear and quadratic regressions
-esttab reg_d*, se
-esttab reg_c*, se
-esttab reg_v*, se
+esttab reg_d*, se label
+esttab reg_c*, se label
+esttab reg_v*, se label
 
 
 
@@ -158,7 +168,7 @@ forvalues h = 0.4(-0.1)0.1 {
 	eststo regd1_`i'
 	drop i
 }	
-esttab regd1_*, keep(treat) ti("Death Rates Across Multiple Bandwidths - Linear Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se
+esttab regd1_*, keep(treat) ti("Death Rates Across Multiple Bandwidths - Linear Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se label
 
 * Death Rate Bandwidth - Quadratic Fit
 forvalues h = 0.4(-0.1)0.1 {
@@ -168,7 +178,7 @@ forvalues h = 0.4(-0.1)0.1 {
 	eststo regd2_`i'
 	drop i
 }	
-esttab regd2_*, keep(treat) ti("Death Rates Across Multiple Bandwidths - Quadratic Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se
+esttab regd2_*, keep(treat) ti("Death Rates Across Multiple Bandwidths - Quadratic Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se label
 
 
 
@@ -183,7 +193,7 @@ forvalues h = 0.4(-0.1)0.1 {
 	eststo regc1_`i'
 	drop i
 }	
-esttab regc1_*, keep(treat) ti("Case Rates Across Multiple Bandwidths - Linear Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se
+esttab regc1_*, keep(treat) ti("Case Rates Across Multiple Bandwidths - Linear Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se label
 
 * Case Rate Bandwidth - Quadratic Fit
 forvalues h = 0.4(-0.1)0.1 {
@@ -193,7 +203,7 @@ forvalues h = 0.4(-0.1)0.1 {
 	eststo regc2_`i'
 	drop i
 }	
-esttab regc2_*, keep(treat) ti("Case Rates Across Multiple Bandwidths - Quadratic Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se
+esttab regc2_*, keep(treat) ti("Case Rates Across Multiple Bandwidths - Quadratic Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se label
 
 
 
@@ -207,7 +217,7 @@ forvalues h = 0.4(-0.1)0.1 {
 	eststo regv1_`i'
 	drop i
 }	
-esttab regv1_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Linear Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se 
+esttab regv1_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Linear Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se label
 
 * Vaccination Rate Bandwidth - Quadratic Fit
 forvalues h = 0.4(-0.1)0.1 {
@@ -217,7 +227,7 @@ forvalues h = 0.4(-0.1)0.1 {
 	eststo regv2_`i'
 	drop i
 }	
-esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Quadratic Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se 
+esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Quadratic Fit") mtitles("+-40%" "+-30%" "+-20%" "+-10%") se label
 
 
 ******************************************************************************************
@@ -236,7 +246,7 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	ytitle("Death Rate as of 11/16/2020", size(medsmall) margin(small)) ylabel(,labsize(medsmall)  format(%10.7e)) xtitle("Distance to cutoff", size(medsmall) margin(small)) xlabel( -.50(.1).50, labsize(medsmall)) 
 	graphregion(fcolor(white) lcolor(white)) legend(order(2 "Linear fit" 3 "Percentage bin") size(medlarge)) plotregion(lcolor(black) lwidth(thin));
 	#delimit cr
-	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures\LinearRegDeath.png", width(1000) replace
+	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\LinearRegDeath.png", width(1000) replace
 	
 // Figure of Quadratic Regression -- Death Rate
 	#delimit ;
@@ -246,7 +256,7 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	ytitle("Death Rate as of 11/16/2020", size(medsmall) margin(small)) ylabel(,labsize(medsmall)  format(%10.7e)) xtitle("Distance to cutoff", size(medsmall) margin(small)) xlabel( -.50(.1).50, labsize(medsmall)) 
 	graphregion(fcolor(white) lcolor(white)) legend(order(2 "Quadratic fit" 3 "Percentage bin") size(medlarge)) plotregion(lcolor(black) lwidth(thin));
 	#delimit cr
-	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures\QuadraticRegDeath.png", width(1000) replace
+	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\QuadraticRegDeath.png", width(1000) replace
 	
 	
 // Figure of Linear Regression -- Case Rate
@@ -257,7 +267,7 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	ytitle("Case Rate as of 11/16/2020", size(medsmall) margin(small)) ylabel(,labsize(medsmall)  format(%9.2f)) xtitle("Distance to cutoff", size(medsmall) margin(small)) xlabel( -.50(.1).50, labsize(medsmall)) 
 	graphregion(fcolor(white) lcolor(white)) legend(order(2 "Linear fit" 3 "Percentage bin") size(medlarge)) plotregion(lcolor(black) lwidth(thin));
 	#delimit cr
-	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures\LinearRegCase.png", width(1000) replace
+	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\LinearRegCase.png", width(1000) replace
 	
 // Figure of Quadratic Regression -- Case Rate
 	#delimit ;
@@ -267,7 +277,7 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	ytitle("Case Rate as of 11/16/2020", size(medsmall) margin(small)) ylabel(,labsize(medsmall)  format(%9.2f)) xtitle("Distance to cutoff", size(medsmall) margin(small)) xlabel( -.50(.1).50, labsize(medsmall)) 
 	graphregion(fcolor(white) lcolor(white)) legend(order(2 "Quadratic fit" 3 "Percentage bin") size(medlarge)) plotregion(lcolor(black) lwidth(thin));
 	#delimit cr
-	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures\QuadraticRegCase.png", width(1000) replace
+	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\QuadraticRegCase.png", width(1000) replace
 	
 	
 // Figure of Linear Regression -- Vaccination Rate
@@ -278,7 +288,7 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	ytitle("Vaccination Rate as of 05/31/2021", size(medsmall) margin(small)) ylabel(,labsize(medsmall)  format(%9.2f)) xtitle("Distance to cutoff", size(medsmall) margin(small)) xlabel( -.50(.1).50, labsize(medsmall)) 
 	graphregion(fcolor(white) lcolor(white)) legend(order(2 "Linear fit" 3 "Percentage bin") size(medlarge)) plotregion(lcolor(black) lwidth(thin));
 	#delimit cr
-	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures\LinearRegVax.png", width(1000) replace
+	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\LinearRegVax.png", width(1000) replace
 	
 // Figure of Quadratic Regression -- Vaccination Rate
 	#delimit ;
@@ -288,7 +298,7 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	ytitle("Vaccination Rate as of 05/31/2021", size(medsmall) margin(small)) ylabel(,labsize(medsmall)  format(%9.2f)) xtitle("Distance to cutoff", size(medsmall) margin(small)) xlabel( -.50(.1).50, labsize(medsmall)) 
 	graphregion(fcolor(white) lcolor(white)) legend(order(2 "Quadratic fit" 3 "Percentage bin") size(medlarge)) plotregion(lcolor(black) lwidth(thin));
 	#delimit cr
-	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures\QuadraticRegVax.png", width(1000) replace
+	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\QuadraticRegVax.png", width(1000) replace
 
 
 
