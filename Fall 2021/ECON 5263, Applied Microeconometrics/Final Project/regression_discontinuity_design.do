@@ -1,3 +1,5 @@
+log using "O:\Fall 2021\U of A\MET HW\Final Project\Adopo_Jeffries_Final_log"
+
 /* READ ME
 
 University of Arkansas, Fayetteville, Arkansas
@@ -6,9 +8,7 @@ ECON 5783, Applied Microeconometrics
 
 For: Course Project
 Written by: Daryl Adopo & Robby Jeffries
-Date: 01 December 2021
-
-Background:
+Date: 17 December 2021
 
 */
 
@@ -300,9 +300,15 @@ esttab regv2_*, keep(treat) ti("Vaccination Rates Across Multiple Bandwidths - Q
 	#delimit cr
 	graph export "O:\Fall 2021\U of A\MET HW\Final Project\Figures, with Vax\QuadraticRegVax.png", width(1000) replace
 
+	
 
+*********************
+* Housekeeping
+*********************
 
+log close
 
+translate "O:\Fall 2021\U of A\MET HW\Final Project\Adopo_Jeffries_Final_log.smcl"  "O:\Fall 2021\U of A\MET HW\Final Project\Adopo_Jeffries_Final_log.pdf"
 
 
 
