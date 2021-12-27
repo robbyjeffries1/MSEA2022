@@ -2,7 +2,7 @@
 # 09-09-2021
 
 # Comment blocks of code with CTRL + SHIFT + C
-
+install.packages("languageserver")
 library(tidyverse)
 
 diamonds
