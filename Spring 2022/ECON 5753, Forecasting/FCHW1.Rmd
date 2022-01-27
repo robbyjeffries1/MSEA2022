@@ -1,0 +1,117 @@
+---
+title: "Forecasting, Homework 1"
+author: "Robby Jeffries"
+date: "1/26/2022"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
+```
+
+## Set working directory
+
+```{r}
+setwd("~/MSEA2022/Spring 2022/ECON 5753, Forecasting")
+```
+
+## Import packages and install them if necessary
+
+```{r}
+list.of.packages <- c("tidyverse", "caTools", "pastecs", "ggplot2")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+library(tidyverse)
+library(caTools)
+library(pastecs)
+library(ggplot2)
+```
+
+## 1) Import data
+
+```{r}
+df = read.csv("Data/50_Startups.csv")
+```
+
+## 2) Show descriptive statistics
+
+```{r}
+options(scipen = 100)
+options(digits = 2)
+pastecs::stat.desc(df)
+```
+
+## 3) Replace missing data with the mean of each variable
+
+```{r}
+df$R.D.Spend = ifelse(is.na(df$R.D.Spend), 
+                      mean(df$R.D.Spend, na.rm=TRUE), 
+                        df$R.D.Spend)
+
+df$Marketing.Spend = ifelse(is.na(df$Marketing.Spend), 
+                      mean(df$Marketing.Spend, na.rm=TRUE), 
+                      df$Marketing.Spend)
+```
+
+## 4) Simple Linear Regression: Dep. variable-Profit, Ind. variable-R&D Spend
+
+```{r}
+reg = lm(formula = Profit ~ R.D.Spend, data = df)
+summary(reg)
+y_hat = predict(reg, newdata = df)
+```
+
+## 5) Visualize the data
+
+```{r}
+ggplot() + 
+  geom_point(aes(x = df$R.D.Spend, 
+                 y = df$Profit), 
+             colour = 'red') +
+  geom_line(aes(x = df$R.D.Spend, 
+                y = y_hat), 
+            colour = 'blue') +
+  ggtitle('Figure 1: Profit vs. R.D. Spend') +
+  xlab('R.D.Spend') +
+  ylab('Profit')
+```
+
+## 6) Generate quadratic form of ind. variable R&D Spend
+
+```{r}
+quadraticModel = lm(formula = Profit ~ df$R.D.Spend + I(df$R.D.Spend^2), data = df)
+```
+
+## 7) Print out the quadratic regression result
+
+```{r}
+summary(quadraticModel)
+y_hat2 = predict(quadraticModel, newdata = df)
+```
+
+## 8) Visualize the data
+
+```{r}
+ggplot(df, aes(R.D.Spend, Profit)) + 
+  geom_point(aes(x = R.D.Spend, 
+                 y = Profit), 
+             colour = 'firebrick') +
+  geom_line(aes(x = R.D.Spend, 
+                y = y_hat), 
+            colour = 'gray30', 
+            size = 1) +
+  geom_smooth(method = lm, 
+              formula = y ~ x + I(x^2), 
+              se = FALSE, 
+              colour = 'seagreen', 
+              size = 1) +
+  ggtitle('Figure 2: Profit vs. R.D. Spend') +
+  xlab('R.D.Spend') +
+  ylab('Profit')
+```
+
+
+
+
