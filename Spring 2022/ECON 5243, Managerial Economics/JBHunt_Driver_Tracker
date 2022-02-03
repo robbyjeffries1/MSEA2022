@@ -1,0 +1,22 @@
+# J.B. Hunt Interview Question
+# Written by: Robby Jeffries
+# Date: 02/03/2022
+# Time to code: 8 min
+
+# Set time of phone call
+t = int(input('At what hour would you like to call the driver?\n'))
+
+# Calculate drive time and break time
+drive_time = (t//10)*6
+break_time = (t//10)*4
+
+remainder = (t%10)
+
+if remainder <= 6:
+    drive_time += remainder
+else:
+    drive_time += 6
+    break_time += (remainder-6)
+
+print("The driver's total drive time is", drive_time, "hours.")
+print("The driver's total break time is", break_time, "hours.")
