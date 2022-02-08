@@ -1,9 +1,9 @@
 # Regression Discontinuity Design: Impact of Counties' Political Affiliation on Covid-19 Cases, Deaths, and Vaccinations
 
-**Daryl Adopo<sup>1</sup>** and **Robert Jeffries<sup>1</sup>** \
+**Robert Jeffries<sup>1</sup>** and **Daryl Adopo<sup>1</sup>** \
 <sup>1</sup> Walton Graduate School of Business, University of Arkansas, Fayetteville, Arkansas, United States 
 
-E-mail: ydadopo@uark.edu, rejeffri@uark.edu 
+E-mail: rejeffri@uark.edu, ydadopo@uark.edu 
 
 Received 17 December 2021
 
