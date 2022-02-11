@@ -26,3 +26,13 @@ is.ts(yt)
 # Autocorrelation function (figure 1)
 rho <- acf(yt)
 rho
+
+m1 <- lm(sales ~ 1, data = data)  #Create a linear model
+resid(m1) #List of residuals
+plot(density(resid(m1))) #A density plot
+qqnorm(resid(m1)) # A quantile normal plot - good for checking normality
+qqline(resid(m1))
+
+rho2 <- acf(resid(m1), lag.max = 10)
+rho2
+

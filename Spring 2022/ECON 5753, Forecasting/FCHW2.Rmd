@@ -1,0 +1,89 @@
+---
+title: "Forecasting, Homework 2"
+author: "Robby Jeffries"
+date: "2/8/2022"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
+```
+
+## Set working directory
+
+```{r}
+setwd("~/MSEA2022/Spring 2022/ECON 5753, Forecasting")
+```
+
+## Import packages and install them if necessary
+
+```{r}
+list.of.packages <- c("tidyverse", "caTools", "pastecs", "ggplot2")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+library(tidyverse)
+library(caTools)
+library(pastecs)
+library(ggplot2)
+```
+
+## Import data
+
+```{r}
+df = read.csv("Data/tablep21_hw2.csv")
+```
+
+## 1) Plot the sales data as a time series. Figure 1.
+
+```{r}
+fig1 <- ggplot2::ggplot(df, aes(x=week, y=sales)) +
+  geom_line() +
+  xlab("Week") +
+  ylab("Dollars ($)") +
+  ggtitle("Figure 1: Sales Data as a Time Series")
+
+fig1
+```
+
+## 2) Do you think this series is stationary or nonstationary? Explain.
+
+I believe that the series is _____.
+
+
+
+## 3) Compute the autocorrelation coefficients of the sales series for the first 10 time lags. Is the behavior of the autocorrelation consistent with your conclusion of part 2? Explain.
+
+```{r}
+# Ask R if the data is time series or not
+is.ts(df$sales)
+
+# Change to time series data
+yt <- ts(df$sales, start = 1, frequency = 1)
+
+# Ask R if the new yt variable is time series or not
+is.ts(yt)
+
+# Autocorrelation function 
+rho <- acf(yt, lag.max = 10)
+rho
+```
+
+## 5) Fit a random model and compute residual
+
+```{r}
+m1 <- lm(sales ~ 1, data = df)  # Create a linear model
+resid(m1) # List of residuals
+plot(density(resid(m1))) # A density plot
+qqnorm(resid(m1)) # A quantile normal plot - good for checking normality
+qqline(resid(m1))
+```
+
+## 6) Compute the autocorrelation function of epsilon_t for the first 10 time lags
+
+```{r}
+rho2 <- acf(resid(m1), lag.max = 10)
+rho2
+```
+
