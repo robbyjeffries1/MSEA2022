@@ -1,7 +1,7 @@
 ---
 title: "Forecasting, Homework 2"
 author: "Robby Jeffries"
-date: "2/8/2022"
+date: "2/14/2022"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -14,19 +14,24 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
 ## Set working directory
 
 ```{r}
+rm(list = ls(all.names = TRUE))
+
 setwd("~/MSEA2022/Spring 2022/ECON 5753, Forecasting")
 ```
 
 ## Import packages and install them if necessary
 
 ```{r}
-list.of.packages <- c("tidyverse", "caTools", "pastecs", "ggplot2")
+list.of.packages <- c("tidyverse", "caTools", "pastecs", "ggplot2", "olsrr", "ggplotify", "lmtest")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 library(tidyverse)
 library(caTools)
 library(pastecs)
 library(ggplot2)
+library(olsrr)
+library(ggplotify)
+library(lmtest)
 ```
 
 ## Import data
@@ -49,9 +54,9 @@ fig1
 
 ## 2) Do you think this series is stationary or nonstationary? Explain.
 
-I believe that the series is _____.
+I believe that the series is nonstationary for the range of data provided. The plot appears to indicate seasonality with a higher average dollar amount in the fourth quarter of the year. It is important to note that the plot does not appear to represent more than one complete cycle. It would be interesting to compare this plot to a two-year plot to confirm seasonality within the data. For example, year over year, if the seasonality is consistent, the data would be stationary. 
 
-
+With only one year of data, however, I observe a non-constant mean. Therefore, the data provided appears nonstationary.
 
 ## 3) Compute the autocorrelation coefficients of the sales series for the first 10 time lags. Is the behavior of the autocorrelation consistent with your conclusion of part 2? Explain.
 
@@ -70,20 +75,47 @@ rho <- acf(yt, lag.max = 10)
 rho
 ```
 
+The autocorrelation plot actually seems to indicate a stationary time series. As the lag increases, the autocorrelation coefficient approaches zero. This demonstrates exponential decay, which is what indicates a stationary time series. According to the plot, lag 1 and lag 2 extend above the confidence interval line, but the correlation coefficients quickly lower to within the confidence interval. 
+
+Correlation coefficients above the confidence interval line indicate non-stationary data, but since only two lags are above the line, it's possible that these two are outliers. To confidently label the data as non-stationary, I would want to perform a similar test across a longer time-period.
+
+Reference: https://coolstatsblog.com/2013/08/07/how-to-use-the-autocorreation-function-acf/
+
+## 4) Calculate the mean of Sales
+
+```{r}
+avg_sales <- mean(df$sales)
+avg_sales
+```
+
 ## 5) Fit a random model and compute residual
 
 ```{r}
 m1 <- lm(sales ~ 1, data = df)  # Create a linear model
-resid(m1) # List of residuals
-plot(density(resid(m1))) # A density plot
-qqnorm(resid(m1)) # A quantile normal plot - good for checking normality
-qqline(resid(m1))
+uhat <- resid(m1) # List of residuals
+uhat
 ```
 
 ## 6) Compute the autocorrelation function of epsilon_t for the first 10 time lags
 
 ```{r}
-rho2 <- acf(resid(m1), lag.max = 10)
+rho2 <- acf(uhat, lag.max = 10)
 rho2
 ```
 
+## 7) Is the random model adequate for the sales data? (Review assumptions of OLS)
+
+No. According to OLS assumptions, error terms should be independent. That is, the error terms should not be autocorrelated. The autocorrelation plot shows that the the correlation coefficient extends beyond the confidence interval for lags 1 and 2. This indicates that the OLS assumption fails and the random model is not adequate for the sales data.
+
+## Bonus Graphs
+
+Throughout this assignment, I came across several packages and graphs that were helpful for my understanding. These are included below for reference, though I did not explicitly reference them in my solutions.
+
+```{r}
+summary(m1)
+olsrr::ols_test_normality(m1)
+plot(m1)
+plot(density(resid(m1))) # A density plot
+qqnorm(resid(m1)) # A quantile normal plot - good for checking normality
+qqline(resid(m1))
+```
