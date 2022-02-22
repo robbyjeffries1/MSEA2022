@@ -1,0 +1,90 @@
+---
+title: "Forecasting, Homework 3"
+author: "Robby Jeffries"
+date: "2/22/2022"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = TRUE)
+```
+
+## Set working directory
+
+```{r}
+rm(list = ls(all.names = TRUE))
+
+setwd("~/MSEA2022/Spring 2022/ECON 5753, Forecasting")
+```
+
+## Import packages
+
+```{r}
+library(tidyverse)
+library(lmtest)
+```
+
+## Import data
+
+```{r}
+data <- readr::read_csv("Data/saving_inc.csv") 
+
+# Name the second column 'y'
+names(data)[2] <- "y"
+# Name the third column 'x'
+names(data)[3] <- "x"
+```
+
+## (a) Run the regression
+
+```{r}
+reg <- lm(formula = y~x+WAR, data = data)
+summary(reg)
+```
+
+## (b) Test to determine whether knowledge of the war years makes a significant contribution to the prediciton of personal savings beyond that provided by personal income.
+ANSWER: Yes, knowledge of the war years makes a significant contribution. The t-statistic for X_2 = 8.490, which indicates strong statistical significance.
+
+## (c) Calculate the standard error of estimation
+
+```{r}
+std_error <- sqrt(deviance(reg)/df.residual(reg))
+std_error
+```
+
+## (d) Test the significance of the regression
+
+ANSWER: For this, I will look at the F-statistic and its associated p-value. The F-statistic is 46.51 and its p-value is very close to zero (1.278e-07). Therefore, I conclude that the regression is statistically significant.
+
+## (e) Test for autocorrelation based on Durbin-Watson test and Breusch and Godfrey LM test
+### Durbin-Watson Test
+```{r}
+lmtest::dwtest(y~x+WAR, data = data)
+```
+
+CONCLUSION: I fail to reject the null hypothesis that the residuals from the OLS regression are not autocorrelated. 
+
+### Breusch and Godfrey LM Test
+
+```{r}
+bgtest(y~x+WAR, order = 3, data = data) # if small p-value, reject null hypothesis
+```
+
+CONCLUSION: I fail to reject the null hypothesis that there is no serial correlation of any order up to 3.
+
+## (f) What is the model for the saving model for war years? Compare with the model for not war year, how do we explain the difference between those two models? 
+
+### Model with war years
+```{r}
+summary(reg)
+```
+
+### Model without war years
+```{r}
+reg2 <- lm(formula = y~x, data = data)
+summary(reg2)
+```
+
+The model with war years shows that the dummy variable significantly affects the dependent variable, personal savings. That is, during wartime, people save more money than during peacetime. When the wartime variable is not included, the R-squared value decreases from 0.8455 to 0.1903, which indicates that personal income only explains 19% of the variation in personal savings. Together, the wartime and personal income variables explain 85% of the variation in personal savings. Therefore, I concluded that the dummy variable was a great addition, and it strengthened the overall model.
